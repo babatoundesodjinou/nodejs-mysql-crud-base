@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  nodejs-mysql-crud:
+    image: nodejs-mysql-crud:3
+    ports:
+      - "3044:3000"
+    environment:
+      DBHOST: 'mysql'
+      DBPORT: 3306
+      DBNAME: 'nodejs2'
+      DBUSER: 'root'
+      DBPASS: 'root'
+    depends_on:
+      - mysql
+    volumes:
+      - "/Users/eric/aea/tp_esgis/devops/nodejs-mysql-crud/src/:/usr/src/app/src/"
+    networks:
+      - outside
+
+  mysql:
+    image: mysql:latest
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=nodejs2
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - outside
+
+volumes:
+  mysql-data:
+
+# docker network create tp-devops
+networks:
+  outside:
+    external:
+      name: tp-devops

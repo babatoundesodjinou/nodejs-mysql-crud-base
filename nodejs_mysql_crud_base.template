@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs_mysql_crud_base
+  labels:
+    app: nodejs_mysql_crud_base
+  namespace: esgis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs_mysql_crud_base
+  template:
+    metadata:
+      labels:
+        app: nodejs_mysql_crud_base
+    spec:
+      containers:
+      - name: nodejs_mysql_crud_base
+        image: eachaka/nodejs-mysql-crud-base:COMMIT
+        ports:
+        - containerPort: 3000
+      imagePullSecrets:
+      - name: gitlab
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodejs_mysql_crud_base
+  namespace: esgis
+spec:
+  selector:
+    app: nodejs_mysql_crud_base
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000

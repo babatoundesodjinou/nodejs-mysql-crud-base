@@ -1,0 +1,36 @@
+image: debian:bullseye
+
+stages:
+  - build
+  - deploy
+
+docker-image-build:
+   image: docker:stable
+   stage: build
+   services:
+    - docker:18.09.3-dind
+   before_script:
+    - export COMMIT=${CI_COMMIT_SHA:0:8}
+    - echo $COMMIT
+   script:
+    - docker build -f Dockerfile -t eachaka/nodejs-mysql-crud-base:$COMMIT .
+    - docker push eachaka/nodejs-mysql-crud-base:$COMMIT
+   only: 
+    - main
+
+deployment:
+   image: debian:10
+   stage: deploy
+   before_script:
+    - export COMMIT=${CI_COMMIT_SHA:0:8}
+    - echo $COMMIT
+    - sed  s/COMMIT/$COMMIT/ nodejs_mysql_crud_base.template > nodejs_mysql_crud_base.yaml
+    - apt-get update && apt-get install -y curl && curl -LO https://dl.k8s.io/release/v1.22.0/bin/linux/amd64/kubectl && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+    - mkdir -p /etc/kubernetes && echo "$KUBECONFIG" > /etc/kubernetes/admin.conf && export KUBECONFIG=/etc/kubernetes/admin.conf
+   script:
+    - kubectl apply -f nodejs_mysql_crud_base.yaml
+   after_script:
+    - rm -rf /etc/kubernetes/admin.conf
+#   when: manual
+   only: 
+    - main
